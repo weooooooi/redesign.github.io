@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1080, height=1920, initial-scale=1.0">
+    <title>摄像头运动跟随效果</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100vw;
+            height: 100vh;
+            background: #0000FF; /* 蓝色背景 */
+            font-family: monospace;
+        }
+        #characterGrid {
+            position: absolute;
+            display: grid;
+            grid-template-columns: repeat(54, 20px);
+            grid-template-rows: repeat(80, 20px);
+        }
+        #characterGrid span {
+            color: #00FF00; /* 绿色文字 */
+        }
+
+        #input-container {
+            position: absolute;
+            bottom: 120px;  /* 调整位置以腾出空间 */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            font-size: 20px;
+            display: flex;
+            align-items: center; /* 使按钮与输入框垂直对齐 */
+        }
+
+        #charInput {
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            width: 200px; /* 缩短输入框宽度 */
+            background-color: #32CD32;
+            color: white;
+        }
+
+        #pixelArtButton {
+            margin-left: 10px; /* 为按钮和输入框之间增加间隔 */
+            padding: 12px 30px;
+            background: linear-gradient(to right, #9B0082, #D5006E); /* 紫红色渐变 */
+            color: white;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            height: 40px; /* 设置按钮的高度，使其与输入框一致 */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        #copyright {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #00FF00;
+            font-size: 12px;
+            text-align: center;
+        }
+        #copyright span {
+            display: block;
+        }
+        #logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 20px;
+            color: #00FF00;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #00FF00;
+            font-size: 10px;
+            padding: 20px;
+            width: 300px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 20;
+            text-align: center;
+        }
+        #closeBtn {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #00FF00;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="logo" onclick="showPopup()">ReDesign NFT</div>
+    <div id="popup">
+        <p>重新设计是一款实时生成NFT头像的平台。</p>
+        <span id="closeBtn" onclick="closePopup()">×</span>
+    </div>
+
+    <div id="input-container">
+        <label for="charInput" style="color: white;">IMPORT：</label>
+        <input type="text" id="charInput" value="Redesign_Lab" />
+        <button id="pixelArtButton" onclick="togglePixelArt()">STYLEᴬᴿᵀ</button>
+    </div>
+
+    <div id="characterGrid"></div>
+
+    <div id="copyright">
+        <span>©Redesign_Lab</span>
+        <span>Email：redesign_lab@outlook.com</span>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script>
+        let video;
+        let previousPixels;
+        let characterGrid;
+        let characters;
+        const gridCols = 54;
+        const gridRows = 80;
+        let motionDetected = false;
+        let isPixelArtMode = false; // Track if we're in pixel art mode
+
+        function setup() {
+            createCanvas(1080, 1920);
+            video = createCapture(VIDEO);
+            video.size(gridCols, gridRows);
+            video.hide();
+
+            characterGrid = document.getElementById('characterGrid');
+            characters = document.getElementById('charInput').value;
+
+            for (let i = 0; i < gridCols * gridRows; i++) {
+                const charSpan = document.createElement('span');
+                charSpan.textContent = '';
+                characterGrid.appendChild(charSpan);
+            }
+
+            document.getElementById('charInput').addEventListener('input', updateCharacterSet);
+        }
+
+        function draw() {
+            video.loadPixels();
+
+            if (!previousPixels) {
+                previousPixels = new Uint8ClampedArray(video.pixels);
+            }
+
+            motionDetected = false;
+
+            for (let y = 0; y < gridRows; y++) {
+                for (let x = 0; x < gridCols; x++) {
+                    const index = (y * video.width + x) * 4;
+                    const r = video.pixels[index];
+                    const g = video.pixels[index + 1];
+                    const b = video.pixels[index + 2];
+                    const brightness = (r + g + b) / 3;
+
+                    const charIndex = y * gridCols + x;
+                    let charSpan = characterGrid.children[charIndex];
+
+                    const pr = previousPixels[index];
+                    const pg = previousPixels[index + 1];
+                    const pb = previousPixels[index + 2];
+                    const brightnessPrev = (pr + pg + pb) / 3;
+                    const motionThreshold = 20;
+                    const motionDetectedThisFrame = Math.abs(brightness - brightnessPrev) > motionThreshold;
+
+                    if (motionDetectedThisFrame) {
+                        motionDetected = true;
+                        if (!isPixelArtMode) {
+                            if (!charSpan.textContent) {
+                                charSpan.textContent = randomCharacter();
+                            }
+                        } else {
+                            charSpan.style.backgroundColor = `rgb(${r}, ${g}, ${b})`; // Apply pixel color
+                        }
+                    } else {
+                        if (!isPixelArtMode) {
+                            charSpan.textContent = '';
+                        } else {
+                            charSpan.style.backgroundColor = 'transparent'; // Clear mosaic if no motion
+                        }
+                    }
+                }
+            }
+
+            previousPixels.set(video.pixels);
+
+            if (!motionDetected && !isPixelArtMode) {
+                for (let i = 0; i < characterGrid.children.length; i++) {
+                    characterGrid.children[i].textContent = '';
+                }
+            }
+        }
+
+        function randomCharacter() {
+            return characters.charAt(floor(random(characters.length)));
+        }
+
+        function updateCharacterSet() {
+            characters = document.getElementById('charInput').value;
+        }
+
+        function showPopup() {
+            document.getElementById('popup').style.display = 'block';
+        }
+
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+        }
+
+        // Toggle between character and pixel art mode
+        function togglePixelArt() {
+            isPixelArtMode = !isPixelArtMode;
+
+            // Clear the grid when switching modes
+            clearGrid();
+
+            // Refill the grid with either character or pixel art
+            if (isPixelArtMode) {
+                // Apply a mosaic effect (by clearing text content and using background colors)
+                for (let i = 0; i < characterGrid.children.length; i++) {
+                    characterGrid.children[i].style.backgroundColor = 'transparent';
+                }
+            } else {
+                // Re-enable character mode
+                for (let i = 0; i < characterGrid.children.length; i++) {
+                    characterGrid.children[i].textContent = '';
+                }
+            }
+        }
+
+        // Function to clear the grid
+        function clearGrid() {
+            for (let i = 0; i < characterGrid.children.length; i++) {
+                characterGrid.children[i].textContent = '';
+                characterGrid.children[i].style.backgroundColor = 'transparent';
+            }
+        }
+    </script>
+</body>
+</html>
