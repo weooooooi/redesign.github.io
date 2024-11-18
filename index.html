@@ -14,20 +14,20 @@
             align-items: center;
             width: 100%;
             height: 100%;
-            background: #0000FF; /* 蓝色背景 */
+            background: #0000FF;
             font-family: monospace;
         }
         #characterGrid {
             position: absolute;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(10px, 1fr)); /* 增加网格密度，减小每个单元格的大小 */
-            grid-auto-rows: 10px; /* 使每个单元格更小 */
+            grid-template-columns: repeat(auto-fit, minmax(10px, 1fr));
+            grid-auto-rows: 15px;
             width: 100%;
             height: 100%;
         }
         #characterGrid span {
             color: #00FF00;
-            font-size: 8px; /* 减小字符大小以适应更密集的网格 */
+            font-size: 12px;
         }
 
         #input-container {
@@ -84,7 +84,7 @@
             padding: 20px;
             width: 300px;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0px 0px rgba(0, 0, 0, 0);
             display: none;
             z-index: 20;
             text-align: center;
@@ -92,11 +92,11 @@
 
         #closeBtn {
             position: absolute;
-            bottom: -40px;
+            bottom: -50px;
             left: 50%;
             transform: translateX(-50%);
             color: #00FF00;
-            font-size: 30px;
+            font-size: 40px;
             font-weight: bold;
             cursor: pointer;
         }
@@ -137,7 +137,7 @@
     <div id="copyright">
         <p style="white-space: pre-line;">
         ©Redesign_Lab 2024
-        Email：redesign_lab@outlook.com
+        Email：redesign
     </p>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
@@ -145,8 +145,8 @@
         let video, previousPixels, isPixelArtMode = false;
         let gridCols = Math.floor(window.innerWidth / 10), gridRows = Math.floor(window.innerHeight / 10); // 增加网格的列数和行数
         let characters = document.getElementById('charInput').value;
-        let lastUpdateTime = 0; // 用于控制更新频率
-        const updateInterval = 100; // 每 100ms 更新一次
+        let lastUpdateTime = 0;
+        const updateInterval = 100;
 
         function setup() {
             createCanvas(window.innerWidth, window.innerHeight);
@@ -156,13 +156,13 @@
             });
             createCharacterGrid();
             document.getElementById('charInput').addEventListener('input', updateCharacterSet);
-            window.addEventListener('resize', resizeCanvasAndGrid); // Ensure responsiveness on resize
-            requestAnimationFrame(draw);  // Start animation
+            window.addEventListener('resize', resizeCanvasAndGrid);
+            requestAnimationFrame(draw);
         }
 
         function createCharacterGrid() {
             const grid = document.getElementById('characterGrid');
-            grid.innerHTML = '';  // 清空已有的网格
+            grid.innerHTML = '';
             for (let i = 0; i < gridCols * gridRows; i++) {
                 const span = document.createElement('span');
                 grid.appendChild(span);
@@ -172,10 +172,10 @@
         function draw() {
             const currentTime = millis();
             if (currentTime - lastUpdateTime < updateInterval) {
-                requestAnimationFrame(draw); // 等待下一个更新周期
+                requestAnimationFrame(draw);
                 return;
             }
-            lastUpdateTime = currentTime; // 更新上次更新时间
+            lastUpdateTime = currentTime;
 
             video.loadPixels();
             if (!previousPixels) previousPixels = new Uint8ClampedArray(video.pixels);
@@ -210,7 +210,7 @@
             previousPixels.set(video.pixels);
 
             if (motionDetected) {
-                requestAnimationFrame(draw);  // 只有在检测到运动时继续动画
+                requestAnimationFrame(draw);
             }
         }
 
@@ -244,14 +244,14 @@
         }
 
         function resizeCanvasAndGrid() {
-            createCanvas(window.innerWidth, window.innerHeight);  // Resize canvas
-            const newGridCols = Math.floor(window.innerWidth / 10);  // Recalculate grid columns based on new width
-            const newGridRows = Math.floor(window.innerHeight / 10);  // Recalculate grid rows based on new height
+            createCanvas(window.innerWidth, window.innerHeight);
+            const newGridCols = Math.floor(window.innerWidth / 10);
+            const newGridRows = Math.floor(window.innerHeight / 10);
             if (newGridCols !== gridCols || newGridRows !== gridRows) {
                 gridCols = newGridCols;
                 gridRows = newGridRows;
-                createCharacterGrid();  // Recreate the grid
-                video.size(gridCols, gridRows);  // Adjust the video capture size
+                createCharacterGrid();
+                video.size(gridCols, gridRows);
             }
         }
 
