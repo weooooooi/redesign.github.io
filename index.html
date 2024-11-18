@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>摄像头运动跟随效果</title>
     <style>
         body, html {
@@ -20,7 +20,7 @@
         #characterGrid {
             position: absolute;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(20px, 1fr)); /* 自动调整列数 */
+            grid-template-columns: repeat(auto-fit, minmax(20px, 1fr));
             grid-auto-rows: 20px;
             width: 100%;
             height: 100%;
@@ -108,9 +108,9 @@
             color: #00FF00;
             font-weight: bold;
             cursor: pointer;
-            z-index: 100; /* 确保Logo位于最上层 */
-            pointer-events: auto; /* 确保点击事件生效 */
-            user-select: none; /* 禁止选中文本 */
+            z-index: 100;
+            pointer-events: auto;
+            user-select: none;
         }
     </style>
 </head>
@@ -123,7 +123,7 @@
 
     <div id="input-container">
         <label for="charInput" style="color: white;">IMPORT：</label>
-        <input type="text" id="charInput" value="010101" />
+        <input type="text" id="charInput" value="010101" aria-label="Character Input"/>
         <button id="pixelArtButton" onclick="togglePixelArt()">STYLEᴬᴿᵀ</button>
     </div>
 
@@ -137,22 +137,24 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script>
         let video, previousPixels, isPixelArtMode = false;
-        const gridCols = Math.floor(windowWidth / 20), gridRows = Math.floor(windowHeight / 20); // 自适应网格
+        const gridCols = Math.floor(window.innerWidth / 20), gridRows = Math.floor(window.innerHeight / 20);
         let characters = document.getElementById('charInput').value;
 
         function setup() {
-            createCanvas(windowWidth, windowHeight);
+            createCanvas(window.innerWidth, window.innerHeight);
             video = createCapture(VIDEO, () => {
-                video.size(windowWidth, windowHeight);  // 根据窗口尺寸调整视频流大小
+                video.size(gridCols, gridRows);
                 video.hide();
             });
             createCharacterGrid();
             document.getElementById('charInput').addEventListener('input', updateCharacterSet);
+            window.addEventListener('resize', resizeCanvasAndGrid); // Ensure responsiveness on resize
+            requestAnimationFrame(draw);  // Start animation
         }
 
         function createCharacterGrid() {
             const grid = document.getElementById('characterGrid');
-            grid.innerHTML = ''; // 清空已有的网格
+            grid.innerHTML = '';  // Clear previous grid
             for (let i = 0; i < gridCols * gridRows; i++) {
                 const span = document.createElement('span');
                 grid.appendChild(span);
@@ -162,9 +164,9 @@
         function draw() {
             video.loadPixels();
             if (!previousPixels) previousPixels = new Uint8ClampedArray(video.pixels);
-            
+
             let motionDetected = false;
-            const motionThreshold = 15;  // 增加灵敏度
+            const motionThreshold = 20;
 
             for (let y = 0; y < gridRows; y++) {
                 for (let x = 0; x < gridCols; x++) {
@@ -175,7 +177,7 @@
 
                     const prevBrightness = (previousPixels[index] + previousPixels[index + 1] + previousPixels[index + 2]) / 3;
                     const motionDetectedThisFrame = Math.abs(brightness - prevBrightness) > motionThreshold;
-                    
+
                     if (motionDetectedThisFrame) {
                         motionDetected = true;
                         if (isPixelArtMode) {
@@ -191,6 +193,10 @@
             }
 
             previousPixels.set(video.pixels);
+
+            if (motionDetected) {
+                requestAnimationFrame(draw);  // Continue animation only if motion is detected
+            }
         }
 
         function randomCharacter() {
@@ -222,9 +228,20 @@
             });
         }
 
+        function resizeCanvasAndGrid() {
+            createCanvas(window.innerWidth, window.innerHeight);  // Resize canvas
+            const newGridCols = Math.floor(window.innerWidth / 20);  // Recalculate grid columns based on new width
+            const newGridRows = Math.floor(window.innerHeight / 20);  // Recalculate grid rows based on new height
+            if (newGridCols !== gridCols || newGridRows !== gridRows) {
+                gridCols = newGridCols;
+                gridRows = newGridRows;
+                createCharacterGrid();  // Recreate the grid
+                video.size(gridCols, gridRows);  // Adjust the video capture size
+            }
+        }
+
         function windowResized() {
-            resizeCanvas(windowWidth, windowHeight);
-            createCharacterGrid(); // 调整网格大小
+            resizeCanvas(window.innerWidth, window.innerHeight);
         }
     </script>
 </body>
