@@ -148,8 +148,8 @@
         let video, previousPixels, isPixelArtMode = false;
         let gridCols = Math.floor(window.innerWidth / 10), gridRows = Math.floor(window.innerHeight / 10); // 增加网格的列数和行数
         let characters = document.getElementById('charInput').value;
-        let lastUpdateTime = 1;
-        const updateInterval = 130;
+        let lastUpdateTime = 10;
+        const updateInterval = 150;
 
         function setup() {
             createCanvas(window.innerWidth, window.innerHeight);
