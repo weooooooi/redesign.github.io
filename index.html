@@ -52,18 +52,18 @@
         }
 
         #pixelArtButton {
-            margin-left: 10px; /* 左边距 */
-            padding: 12px 12px; /* 内边距 */
-            background: linear-gradient(to right, #9B0082, #D5006E); /* 渐变背景 */
-            color: white; /* 字体颜色 */
-            font-size: 18px; /* 字体大小 */
-            border: none; /* 无边框 */
-            border-radius: 20px; /* 圆角 */
-            cursor: pointer; /* 鼠标样式 */
-            height: 40px; /* 高度 */
-            display: flex; /* 设置为弹性盒子 */
-            justify-content: center; /* 水平居中 */
-            align-items: center; /* 垂直居中 */
+            margin-left: 10px;
+            padding: 12px 12px;
+            background: linear-gradient(to right, #9B0082, #D5006E);
+            color: white;
+            font-size: 18px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         #copyright {
@@ -140,7 +140,7 @@
     <div id="copyright">
         <p style="white-space: pre-line;">
         ©Redesign_Lab 2024
-        Token/9eAofbrpwJpytyMSTU3DwGRecTLBGXvbSXd3KT9ZCiHc
+        Token:9eAofbrpwJpytyMSTU3DwGRecTLBGXvbSXd3KT9ZCiHc
     </p>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
@@ -148,8 +148,8 @@
         let video, previousPixels, isPixelArtMode = false;
         let gridCols = Math.floor(window.innerWidth / 10), gridRows = Math.floor(window.innerHeight / 10); // 增加网格的列数和行数
         let characters = document.getElementById('charInput').value;
-        let lastUpdateTime = 0;
-        const updateInterval = 100;
+        let lastUpdateTime = 1;
+        const updateInterval = 130;
 
         function setup() {
             createCanvas(window.innerWidth, window.innerHeight);
