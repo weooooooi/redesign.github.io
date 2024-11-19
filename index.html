@@ -66,6 +66,18 @@
             align-items: center;
         }
 
+        #jumpButton {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 30px;
+            color: #00FF00;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            z-index: 100;
+        }
+
         #copyright {
             position: fixed;
             bottom: 20px;
@@ -106,8 +118,8 @@
 
         #logo {
             position: fixed;
-            top: 20px;
-            left: 100px;
+            top: 22px;
+            left: 25px;
             font-size: 25px;
             color: #00FF00;
             font-weight: bold;
@@ -130,6 +142,14 @@
         <span id="closeBtn" onclick="closePopup()">×</span>
     </div>
 
+    <button id="jumpButton" onclick="openNewPage()">🔍</button>
+
+<script>
+    function openNewPage() {
+        window.open("https://www.xiaohongshu.com/user/profile/6295048a000000002102203a?xhsshare=CopyLink&appuid=6295048a000000002102203a&apptime=1732036163");
+    }
+</script>
+
     <div id="input-container">
         <label for="charInput" style="color: white;">IMPORT：</label>
         <input type="text" id="charInput" value="RDL01" aria-label="Character Input"/>
@@ -146,6 +166,10 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script>
+        function jumpToPage() {
+            window.location.href = "https://example.com";
+        }
+
         let video, previousPixels, isPixelArtMode = false;
         let gridCols = Math.floor(window.innerWidth / 10), gridRows = Math.floor(window.innerHeight / 10);
         let characters = document.getElementById('charInput').value;
@@ -264,4 +288,4 @@
         }
     </script>
 </body>
-</html>
+</html
