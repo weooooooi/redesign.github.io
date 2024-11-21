@@ -1,250 +1,294 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>黑色轮廓像素化头像（自定义颜色）</title>
-  <style>
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      margin: 0;
-      padding: 10px;
-      height: 100vh;
-      background-color: #007bff;
-      box-sizing: border-box;
-    }
-    .container {
-      display: flex;
-      flex-direction: column; /* 垂直排列 */
-      align-items: margin; /* 水平居中 */
-      width: auto;
-    }
-    video {
-      border: 2px solid black;
-      margin-bottom: 10px; /* 添加与画布的间距 */
-      width: 50px; /* 固定宽度 */
-      height: 50px; /* 固定高度 */
-      background-color: white;
-    }
-    canvas {
-      border: 2px solid black;
-      margin: 0;
-      width: 250px;
-      height: 250px;
-      background-color: white;
-    }
-    .controls {
-      margin-top: 10px;
-      text-align: center;
-      width: 100%;
-      max-width: 400px;
-    }
-    .controls label {
-      margin-right: 10px;
-    }
-    button {
-      margin-top: 10px;
-      padding: 10px;
-      font-size: 16px;
-      cursor: pointer;
-      width: 100%;
-    }
-    progress {
-      width: 100%;
-      margin-top: 10px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReDesign ART</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            background: #0000FF;
+            font-family: monospace;
+        }
+        #characterGrid {
+            position: absolute;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(10px, 1fr));
+            grid-auto-rows: 9px;
+            width: 100%;
+            height: 100%;
+        }
+        #characterGrid span {
+            color: #00FF00;
+            font-size: 8px;
+        }
+
+        #input-container {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        #charInput {
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 20px;
+            width: 120px;
+            background-color: #32CD32;
+            color: #0000FF;
+        }
+
+        #pixelArtButton {
+            margin-left: 10px;
+            padding: 12px 12px;
+            background: linear-gradient(to right, #AE00FF, #FF0068);
+            color: white;
+            font-size: 18px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #jumpButton {
+            position: fixed;
+            top: 20px;
+            right: 10px;
+            font-size: 30px;
+            color: #00FF00;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        #copyright {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #00FF00;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        #popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #00FF00;
+            font-size: 10px;
+            padding: 20px;
+            width: 300px;
+            border-radius: 10px;
+            box-shadow: 0 0px 0px rgba(0, 0, 0, 0);
+            display: none;
+            z-index: 20;
+            text-align: center;
+        }
+
+        #closeBtn {
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #00FF00;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #logo {
+            position: fixed;
+            top: 25px;
+            left: 25px;
+            font-size: 25px;
+            color: #00FF00;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 100;
+            pointer-events: auto;
+            user-select: none;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <video id="video" autoplay muted playsinline></video>
-    <canvas id="canvas" width="300" height="300"></canvas>
-  </div>
-  <div class="controls">
-    <label>
-      像素块大小:
-      <input type="range" id="blockSize" min="5" max="50" value="10">
-    </label>
-    <span id="blockSizeValue">10</span>
-    <br>
-    <label>
-      边缘检测阈值:
-      <input type="range" id="edgeThreshold" min="50" max="200" value="100">
-    </label>
-    <span id="edgeThresholdValue">100</span>
-    <br>
-    <label>
-      背景分离阈值:
-      <input type="range" id="bgSeparationThreshold" min="0" max="255" value="40">
-    </label>
-    <span id="bgSeparationThresholdValue">40</span>
-    <br>
-    <label>
-      像素颜色:
-      <input type="color" id="edgeColor" value="#000000">
-    </label>
-    <br>
-    <label>
-      背景颜色:
-      <input type="color" id="bgColor" value="#FFFFFF">
-    </label>
-    <progress id="progressBar" value="0" max="100"></progress>
-    <button id="switchCamera">切换摄像头</button>
-    <button id="download">保存</button>
-  </div>
+    <div id="logo" onclick="showPopup()">ReDesign ART</div>
+    <div id="popup">
+        <p style="white-space: pre-line;">
+        ABOUT
+            
+        Initially I just wanted to make a dynamic interactive poster, but more people couldn't experience it 🙅‍♂️
+        🤔 So I made an online platform 🖥️👇
+        ReDesign ART 🎨 is a platform for generating digital images quickly (very quickly!)
+        Everyone should have their own digital identity👩‍❤️‍👨🧍🧑‍🦯👩‍🦽‍➡️🐶🐱
+        
+            
+        </p>
+        <span id="closeBtn" onclick="closePopup()">×</span>
+    </div>
 
-  <script>
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const downloadButton = document.getElementById('download');
-    const switchCameraButton = document.getElementById('switchCamera');
-    const blockSizeInput = document.getElementById('blockSize');
-    const edgeThresholdInput = document.getElementById('edgeThreshold');
-    const bgSeparationThresholdInput = document.getElementById('bgSeparationThreshold');
-    const edgeColorInput = document.getElementById('edgeColor');
-    const bgColorInput = document.getElementById('bgColor');
-    const blockSizeValue = document.getElementById('blockSizeValue');
-    const edgeThresholdValue = document.getElementById('edgeThresholdValue');
-    const bgSeparationThresholdValue = document.getElementById('bgSeparationThresholdValue');
-    const progressBar = document.getElementById('progressBar');
+    <button id="jumpButton" onclick="openNewPage()">🔍</button>
 
-    let blockSize = parseInt(blockSizeInput.value, 10);
-    let edgeThreshold = parseInt(edgeThresholdInput.value, 10);
-    let bgSeparationThreshold = parseInt(bgSeparationThresholdInput.value, 10);
-    let edgeColor = edgeColorInput.value;
-    let bgColor = bgColorInput.value;
-    let usingFrontCamera = true;
-
-    blockSizeInput.addEventListener('input', () => {
-      blockSize = parseInt(blockSizeInput.value, 10);
-      blockSizeValue.textContent = blockSize;
-    });
-
-    edgeThresholdInput.addEventListener('input', () => {
-      edgeThreshold = parseInt(edgeThresholdInput.value, 10);
-      edgeThresholdValue.textContent = edgeThreshold;
-    });
-
-    bgSeparationThresholdInput.addEventListener('input', () => {
-      bgSeparationThreshold = parseInt(bgSeparationThresholdInput.value, 10);
-      bgSeparationThresholdValue.textContent = bgSeparationThreshold;
-    });
-
-    edgeColorInput.addEventListener('input', () => {
-      edgeColor = edgeColorInput.value;
-    });
-
-    bgColorInput.addEventListener('input', () => {
-      bgColor = bgColorInput.value;
-    });
-
-    async function startCamera(front = true) {
-      try {
-        const constraints = {
-          video: { 
-            width: 300, 
-            height: 300, 
-            facingMode: front ? 'user' : 'environment' 
-          }
-        };
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        video.srcObject = stream;
-      } catch (err) {
-        alert("无法访问摄像头，请检查权限设置或设备连接。");
-        console.error("摄像头错误:", err);
-      }
+<script>
+    function openNewPage() {
+        window.open("https://www.xiaohongshu.com/user/profile/6295048a000000002102203a?xhsshare=CopyLink&appuid=6295048a000000002102203a&apptime=1732036163");
     }
+</script>
 
-    function processVideoFrame() {
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    <div id="input-container">
+        <label for="charInput" style="color: white;">IMPORT：</label>
+        <input type="text" id="charInput" value="RDL01" aria-label="Character Input"/>
+        <button id="pixelArtButton" onclick="togglePixelArt()">STYLEᴬᴿᵀ</button>
+    </div>
 
-        if (usingFrontCamera) {
-          ctx.save();
-          ctx.scale(-1, 1);
-          ctx.translate(-canvas.width, 0);
+    <div id="characterGrid"></div>
+
+    <div id="copyright">
+        <p style="white-space: pre-line;">
+        ©ReDesign Lab 2024
+    </p>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script>
+        function jumpToPage() {
+            window.location.href = "https://example.com";
         }
 
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        let video, previousPixels, isPixelArtMode = false;
+        let gridCols = Math.floor(window.innerWidth / 10), gridRows = Math.floor(window.innerHeight / 10);
+        let characters = document.getElementById('charInput').value;
+        let lastUpdateTime = 5;
+        const updateInterval = 130;
 
-        if (usingFrontCamera) {
-          ctx.restore();
+        function setup() {
+            createCanvas(window.innerWidth, window.innerHeight);
+            video = createCapture(VIDEO, () => {
+                video.size(gridCols, gridRows);
+                video.hide();
+            });
+            createCharacterGrid();
+            document.getElementById('charInput').addEventListener('input', updateCharacterSet);
+            window.addEventListener('resize', resizeCanvasAndGrid);
+            requestAnimationFrame(draw);
         }
 
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const pixels = imageData.data;
+        function createCharacterGrid() {
+            const grid = document.getElementById('characterGrid');
+            grid.innerHTML = '';
+            for (let i = 0; i < gridCols * gridRows; i++) {
+                const span = document.createElement('span');
+                grid.appendChild(span);
+            }
+        }
 
-        const bgColorRGB = hexToRGB(bgColor);
-        let totalBlocks = 0;
-        let processedBlocks = 0;
+        function draw() {
+            const currentTime = millis();
+            if (currentTime - lastUpdateTime < updateInterval) {
+                requestAnimationFrame(draw);
+                return;
+            }
+            lastUpdateTime = currentTime;
 
-        for (let y = 0; y < canvas.height; y += blockSize) {
-          for (let x = 0; x < canvas.width; x += blockSize) {
-            totalBlocks++;
-            let rSum = 0, gSum = 0, bSum = 0, count = 0;
+            video.loadPixels();
+            if (!previousPixels) previousPixels = new Uint8ClampedArray(video.pixels);
 
-            for (let dy = 0; dy < blockSize; dy++) {
-              for (let dx = 0; dx < blockSize; dx++) {
-                const px = 4 * ((y + dy) * canvas.width + (x + dx));
-                if (px < pixels.length) {
-                  rSum += pixels[px];
-                  gSum += pixels[px + 1];
-                  bSum += pixels[px + 2];
-                  count++;
+            let motionDetected = false;
+            const motionThreshold = 20;
+
+            for (let y = 0; y < gridRows; y++) {
+                for (let x = 0; x < gridCols; x++) {
+                    const index = (y * video.width + x) * 4;
+                    const r = video.pixels[index], g = video.pixels[index + 1], b = video.pixels[index + 2];
+                    const brightness = (r + g + b) / 3;
+                    const charSpan = document.getElementById('characterGrid').children[y * gridCols + x];
+
+                    const prevBrightness = (previousPixels[index] + previousPixels[index + 1] + previousPixels[index + 2]) / 3;
+                    const motionDetectedThisFrame = Math.abs(brightness - prevBrightness) > motionThreshold;
+
+                    if (motionDetectedThisFrame) {
+                        motionDetected = true;
+                        if (isPixelArtMode) {
+                            charSpan.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+                        } else {
+                            charSpan.textContent = randomCharacter();
+                        }
+                    } else {
+                        charSpan.style.backgroundColor = 'transparent';
+                        if (!isPixelArtMode) charSpan.textContent = '';
+                    }
                 }
-              }
             }
 
-            const rAvg = rSum / count;
-            const gAvg = gSum / count;
-            const bAvg = bSum / count;
-            const gray = 0.3 * rAvg + 0.59 * gAvg + 0.11 * bAvg;
+            previousPixels.set(video.pixels);
 
-            const isBackground = Math.abs(rAvg - bgColorRGB.r) < bgSeparationThreshold &&
-                                 Math.abs(gAvg - bgColorRGB.g) < bgSeparationThreshold &&
-                                 Math.abs(bAvg - bgColorRGB.b) < bgSeparationThreshold;
-
-            const isEdge = !isBackground && gray < edgeThreshold;
-
-            ctx.fillStyle = isEdge ? edgeColor : bgColor;
-            ctx.fillRect(x, y, blockSize, blockSize);
-
-            processedBlocks++;
-            progressBar.value = (processedBlocks / totalBlocks) * 100;
-          }
+            if (motionDetected) {
+                requestAnimationFrame(draw);
+            }
         }
-      }
 
-      requestAnimationFrame(processVideoFrame);
-    }
+        function randomCharacter() {
+            return characters.charAt(floor(random(characters.length)));
+        }
 
-    function hexToRGB(hex) {
-      const bigint = parseInt(hex.slice(1), 16);
-      return {
-        r: (bigint >> 16) & 255,
-        g: (bigint >> 8) & 255,
-        b: bigint & 255
-      };
-    }
+        function updateCharacterSet() {
+            characters = document.getElementById('charInput').value;
+        }
 
-    downloadButton.addEventListener('click', () => {
-      const link = document.createElement('a');
-      link.download = 'pixel_avatar_no_bg.png';
-      link.href = canvas.toDataURL();
-      link.click();
-    });
+        function showPopup() {
+            document.getElementById('popup').style.display = 'block';
+        }
 
-    switchCameraButton.addEventListener('click', () => {
-      usingFrontCamera = !usingFrontCamera;
-      startCamera(usingFrontCamera);
-    });
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+        }
 
-    startCamera();
-    video.addEventListener('play', processVideoFrame);
-  </script>
+        function togglePixelArt() {
+            isPixelArtMode = !isPixelArtMode;
+            clearGrid();
+        }
+
+        function clearGrid() {
+            const grid = document.getElementById('characterGrid');
+            Array.from(grid.children).forEach(span => {
+                span.textContent = '';
+                span.style.backgroundColor = 'transparent';
+            });
+        }
+
+        function resizeCanvasAndGrid() {
+            createCanvas(window.innerWidth, window.innerHeight);
+            const newGridCols = Math.floor(window.innerWidth / 10);
+            const newGridRows = Math.floor(window.innerHeight / 10);
+            if (newGridCols !== gridCols || newGridRows !== gridRows) {
+                gridCols = newGridCols;
+                gridRows = newGridRows;
+                createCharacterGrid();
+                video.size(gridCols, gridRows);
+            }
+        }
+
+        function windowResized() {
+            resizeCanvas(window.innerWidth, window.innerHeight);
+        }
+    </script>
 </body>
-</html>
+</html
